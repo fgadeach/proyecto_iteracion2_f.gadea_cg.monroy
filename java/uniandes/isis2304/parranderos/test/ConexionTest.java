@@ -13,9 +13,10 @@
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-package uniandes.isis2304.parranderos.test;
+package uniandes.isis2304.aforocc.test;
 
 import static org.junit.Assert.assertEquals;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -28,8 +29,8 @@ import org.junit.Test;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonReader;
-import uniandes.isis2304.parranderos.negocio.Parranderos;
-import uniandes.isis2304.parranderos.negocio.VOTipoBebida;
+import uniandes.isis2304.aforocc.negocio.Parranderos;
+import uniandes.isis2304.aforocc.negocio.VOVisitante;
 
 /**
  * Clase con métodos de prueba de conexión a la base de datos
@@ -190,7 +191,7 @@ public class ConexionTest
 		// Ahora si se puede probar si la tabla existe o no...
 		try
 		{
-			parranderos.darTiposBebida ();
+			parranderos.darVisitantes();
 			fail ("Debería fallar. La tabla consultada no existe en la BD");
 		}
 		catch (Exception e)
