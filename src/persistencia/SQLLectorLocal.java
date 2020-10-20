@@ -28,7 +28,7 @@ class SQLLectorLocal
 	
 	public long adicionarLectorLocal(PersistenceManager pm, long idLector, long idLocal) 
 	{
-        Query q = pm.newQuery(SQL, "INSERT INTO " + pp.darLectorLocal () + "(idcalendario, idcentrocomercial) values (?, ?)");
+        Query q = pm.newQuery(SQL, "INSERT INTO " + pp.darLectorLocal () + "(idlector, idlocal) values (?, ?)");
         q.setParameters(idLector, idLocal);
         return (long) q.executeUnique();
 	}
@@ -36,7 +36,7 @@ class SQLLectorLocal
 	
 	public long eliminarLectorLocal (PersistenceManager pm, long idLector, long idLocal)
 	{
-        Query q = pm.newQuery(SQL, "DELETE FROM " + pp.darLectorLocal () + " WHERE idcalendario = ? AND idcentrocomercial = ?");
+        Query q = pm.newQuery(SQL, "DELETE FROM " + pp.darLectorLocal () + " WHERE idlector = ? AND idlocal = ?");
         q.setParameters(idLector, idLocal);
         return (long) q.executeUnique();
 	}

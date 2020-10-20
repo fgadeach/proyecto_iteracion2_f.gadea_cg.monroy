@@ -25,7 +25,7 @@ class SQLCalendarioVisitanteLocal
 
 	public long adicionarCalendarioVisitanteLocal(PersistenceManager pm, long idCalendario, long idLocal, long idVisitante) 
 	{
-        Query q = pm.newQuery(SQL, "INSERT INTO " + pp.darTablaCalendarioVisitanteLocal () + "(idhorario, idlocal, idvisitante) values (?, ?, ?)");
+        Query q = pm.newQuery(SQL, "INSERT INTO " + pp.darTablaCalendarioVisitanteLocal () + "(idcalendario, idlocal, idvisitante) values (?, ?, ?)");
         q.setParameters(idCalendario, idLocal, idVisitante);
         return (long) q.executeUnique();
 	}
@@ -33,7 +33,7 @@ class SQLCalendarioVisitanteLocal
 
 	public long eliminarCalendarioVisitanteLocal (PersistenceManager pm, long idCalendario, long idLocal, long idVisitante)
 	{
-        Query q = pm.newQuery(SQL, "DELETE FROM " + pp.darTablaCalendarioVisitanteLocal () + " WHERE idhorario = ? AND idlocal = ? AND idvisitante = ?");
+        Query q = pm.newQuery(SQL, "DELETE FROM " + pp.darTablaCalendarioVisitanteLocal () + " WHERE idcalendario = ? AND idlocal = ? AND idvisitante = ?");
         q.setParameters(idCalendario, idLocal, idVisitante);
         return (long) q.executeUnique();
 	}
