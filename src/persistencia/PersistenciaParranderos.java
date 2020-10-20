@@ -20,12 +20,17 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import uniandes.isis2304.aforocc.negocio.Calendario;
+import uniandes.isis2304.aforocc.negocio.CalendarioVisitanteCC;
 import uniandes.isis2304.aforocc.negocio.Carnet;
 import uniandes.isis2304.aforocc.negocio.CentroComercial;
+import uniandes.isis2304.aforocc.negocio.HoraLocal;
+import uniandes.isis2304.aforocc.negocio.Horario;
 import uniandes.isis2304.aforocc.negocio.Lector;
+import uniandes.isis2304.aforocc.negocio.LectorCC;
+import uniandes.isis2304.aforocc.negocio.LectorLocal;
 import uniandes.isis2304.aforocc.negocio.Local;
 import uniandes.isis2304.aforocc.negocio.Visitante;
-
+import uniandes.isis2304.aforocc.negocio.CalendarioVisitanteLocal;
 
 public class PersistenciaParranderos 
 {
@@ -96,6 +101,20 @@ public class PersistenciaParranderos
 	 */
 	private SQLCalendario sqlCalendario;
 	
+	private SQLCalendarioVisitanteCC sqlcalendariovisitantecc;
+	
+	private SQLCalendarioVisitanteLocal sqlcalendariovisitantelocal;
+	
+	private SQLHoraLocal sqlhoralocal;
+	
+	private SQLHorario sqlhorario;
+	
+	private SQLLectorCC sqllectorcc;
+	
+	private SQLLectorLocal sqllectorlocal;
+	
+	
+	
 	/* ****************************************************************
 	 * 			Métodos del MANEJADOR DE PERSISTENCIA
 	 *****************************************************************/
@@ -117,6 +136,12 @@ public class PersistenciaParranderos
 		tablas.add ("CENTROCOMERCIAL");
 		tablas.add ("CARNET");
 		tablas.add ("CALENDARIO");
+		tablas.add("HORA_LOCAL");		
+		tablas.add("CALENDARIO_VISITANTE_LOCAL");
+		tablas.add("CALENDARIO_VISITANTE_CC");
+		tablas.add("HORARIO");
+		tablas.add("LECTOR_LOCAL");
+		tablas.add("LECTOR_CC");
 }
 
 	/**
@@ -197,6 +222,12 @@ public class PersistenciaParranderos
 		sqlCentroComercial = new SQLCentroComercial(this);
 		sqlCarnet = new SQLCarnet (this);
 		sqlCalendario = new SQLCalendario(this);		
+		sqlhoralocal = new SQLHoraLocal(this);
+		sqlcalendariovisitantelocal = new SQLCalendarioVisitanteLocal(this);
+		sqlcalendariovisitantecc = new SQLCalendarioVisitanteCC(this);
+		sqlhorario = new SQLHorario(this);
+		sqllectorlocal = new SQLLectorLocal(this);
+		sqllectorcc = new SQLLectorCC(this);
 		sqlUtil = new SQLUtil(this);
 	}
 
@@ -256,6 +287,36 @@ public class PersistenciaParranderos
 	public String darTablaCalendario ()
 	{
 		return tablas.get (6);
+	}
+	
+	public String darTablaHoraLocal ()
+	{
+		return tablas.get (7);
+	}
+	
+	public String darTablaCalendarioVisitanteLocal ()
+	{
+		return tablas.get (8);
+	}
+	
+	public String darTablaCalendarioVisitanteCC ()
+	{
+		return tablas.get (9);
+	}
+	
+	public String darTablaHorario ()
+	{
+		return tablas.get (10);
+	}
+	
+	public String darTablaLectorLocal ()
+	{
+		return tablas.get (11);
+	}
+	
+	public String darTablaLectorCC ()
+	{
+		return tablas.get (12);
 	}
 	
 	/**
@@ -842,7 +903,435 @@ public class PersistenciaParranderos
 		return sqlCalendario.darCalendario (pmf.getPersistenceManager());
 	}	
 
-	/**
+	//----
+	
+	/* ****************************************************************
+	 * 			Métodos para manejar la relación Hora Local
+	 *****************************************************************/
+	
+	
+	public HoraLocal adicionarHoraLocal ( long idHorario, long idLocal) 
+	{
+		PersistenceManager pm = pmf.getPersistenceManager();
+        Transaction tx=pm.currentTransaction();
+        try
+        {
+            tx.begin();
+            long id = nextval ();
+            long tuplasInsertadas = sqlhoralocal.adicionarHoraLocal (pmf.getPersistenceManager(), id, idLocal);
+    		tx.commit();
+
+            log.trace ("Inserción de HoraLocal: [" + id + ", " + idLocal + "]. " + tuplasInsertadas + " tuplas insertadas");
+
+            return new HoraLocal (id, idLocal);
+        }
+        catch (Exception e)
+        {
+//        	e.printStackTrace();
+        	log.error ("Exception : " + e.getMessage() + "\n" + darDetalleException(e));
+        	return null;
+        }
+        finally
+        {
+            if (tx.isActive())
+            {
+                tx.rollback();
+            }
+            pm.close();
+        }
+	}
+ 
+	
+	public long eliminarHoraLocal (long idHorario, long idLocal) 
+	{
+		PersistenceManager pm = pmf.getPersistenceManager();
+	        Transaction tx=pm.currentTransaction();
+	        try
+	        {
+	            tx.begin();
+	            long resp = sqlhoralocal.eliminarHoraLocal (pm, idHorario, idLocal);	            
+	            tx.commit();
+
+	            return resp;
+	        }
+	        catch (Exception e)
+	        {
+//	        	e.printStackTrace();
+	        	log.error ("Exception : " + e.getMessage() + "\n" + darDetalleException(e));
+	        	return -1;
+	        }
+	        finally
+	        {
+	            if (tx.isActive())
+	            {
+	                tx.rollback();
+	            }
+	            pm.close();
+	        }
+	}
+ 
+	
+	public List<HoraLocal> darHoraLocal ()
+	{
+		return sqlhoralocal.darHoraLocal (pmf.getPersistenceManager());
+	}
+	
+	/* ****************************************************************
+	 * 			Métodos para manejar la relación Calendario Visitante Local
+	 *****************************************************************/
+	
+	
+	public CalendarioVisitanteLocal adicionarCalendarioVisitanteLocal (long idCalendario, long idLocal, long idVisitante) 
+	{
+		PersistenceManager pm = pmf.getPersistenceManager();
+        Transaction tx=pm.currentTransaction();
+        try
+        {
+            tx.begin();
+            long id = nextval ();
+            long tuplasInsertadas = sqlcalendariovisitantelocal.adicionarCalendarioVisitanteLocal (pmf.getPersistenceManager(), idCalendario, idLocal, idVisitante);
+    		tx.commit();
+
+            log.trace ("Inserción de CalendarioVisitanteLocal: [" + id + ", " + idLocal + "]. " + tuplasInsertadas + " tuplas insertadas");
+
+            return new CalendarioVisitanteLocal (idCalendario, idLocal, idVisitante);
+        }
+        catch (Exception e)
+        {
+//        	e.printStackTrace();
+        	log.error ("Exception : " + e.getMessage() + "\n" + darDetalleException(e));
+        	return null;
+        }
+        finally
+        {
+            if (tx.isActive())
+            {
+                tx.rollback();
+            }
+            pm.close();
+        }
+	}
+ 
+	
+	public long eliminarCalendarioVisitanteLocal (long idCalendario, long idLocal, long idVisitante) 
+	{
+		PersistenceManager pm = pmf.getPersistenceManager();
+	        Transaction tx=pm.currentTransaction();
+	        try
+	        {
+	            tx.begin();
+	            long resp = sqlcalendariovisitantelocal.eliminarCalendarioVisitanteLocal (pm,  idCalendario,  idLocal,  idVisitante);	            
+	            tx.commit();
+
+	            return resp;
+	        }
+	        catch (Exception e)
+	        {
+//	        	e.printStackTrace();
+	        	log.error ("Exception : " + e.getMessage() + "\n" + darDetalleException(e));
+	        	return -1;
+	        }
+	        finally
+	        {
+	            if (tx.isActive())
+	            {
+	                tx.rollback();
+	            }
+	            pm.close();
+	        }
+	}
+ 
+	
+	public List<CalendarioVisitanteLocal> darCalendarioVisitanteLocal ()
+	{
+		return sqlcalendariovisitantelocal.darCalendarioVisitanteLocal (pmf.getPersistenceManager());
+	}
+	
+	/* ****************************************************************
+	 * 			Métodos para manejar la relación Calendario Visitante CC
+	 *****************************************************************/
+	
+	
+	public CalendarioVisitanteCC adicionarCalendarioVisitanteCC (long idCalendario, long idCentroComercial, long idVisitante) 
+	{
+		PersistenceManager pm = pmf.getPersistenceManager();
+        Transaction tx=pm.currentTransaction();
+        try
+        {
+            tx.begin();
+            long id = nextval ();
+            long tuplasInsertadas = sqlcalendariovisitantecc.adicionarCalendarioVisitanteCC (pmf.getPersistenceManager(), idCalendario, idCentroComercial, idVisitante);
+    		tx.commit();
+
+            log.trace ("Inserción de CalendarioVisitanteCC: [" + id + ", " + idCentroComercial + "]. " + tuplasInsertadas + " tuplas insertadas");
+
+            return new CalendarioVisitanteCC (idCalendario, idCentroComercial, idVisitante);
+        }
+        catch (Exception e)
+        {
+//        	e.printStackTrace();
+        	log.error ("Exception : " + e.getMessage() + "\n" + darDetalleException(e));
+        	return null;
+        }
+        finally
+        {
+            if (tx.isActive())
+            {
+                tx.rollback();
+            }
+            pm.close();
+        }
+	}
+ 
+	
+	public long eliminarCalendarioVisitanteCC(long idCalendario, long idCentroComercial, long idVisitante) 
+	{
+		PersistenceManager pm = pmf.getPersistenceManager();
+	        Transaction tx=pm.currentTransaction();
+	        try
+	        {
+	            tx.begin();
+	            long resp = sqlcalendariovisitantecc.eliminarCalendarioVisitanteCC (pm,  idCalendario,  idCentroComercial,  idVisitante);	            
+	            tx.commit();
+
+	            return resp;
+	        }
+	        catch (Exception e)
+	        {
+//	        	e.printStackTrace();
+	        	log.error ("Exception : " + e.getMessage() + "\n" + darDetalleException(e));
+	        	return -1;
+	        }
+	        finally
+	        {
+	            if (tx.isActive())
+	            {
+	                tx.rollback();
+	            }
+	            pm.close();
+	        }
+	}
+ 
+	
+	public List<CalendarioVisitanteCC> darCalendarioVisitanteCC ()
+	{
+		return sqlcalendariovisitantecc.darCalendarioVisitanteCC (pmf.getPersistenceManager());
+	}
+	
+	/* ****************************************************************
+	 * 			Métodos para manejar la relación Lector Centro Comercial
+	 *****************************************************************/
+	
+	
+	public LectorCC adicionarLectorCC (long idLector, long idCentroComercial) 
+	{
+		PersistenceManager pm = pmf.getPersistenceManager();
+        Transaction tx=pm.currentTransaction();
+        try
+        {
+            tx.begin();
+            long id = nextval ();
+            long tuplasInsertadas = sqllectorcc.adicionarLectorCC (pmf.getPersistenceManager(), idLector, idCentroComercial);
+    		tx.commit();
+
+            log.trace ("Inserción de LectorCC: [" + id + ", " + idCentroComercial + "]. " + tuplasInsertadas + " tuplas insertadas");
+
+            return new LectorCC (idLector, idCentroComercial);
+        }
+        catch (Exception e)
+        {
+//        	e.printStackTrace();
+        	log.error ("Exception : " + e.getMessage() + "\n" + darDetalleException(e));
+        	return null;
+        }
+        finally
+        {
+            if (tx.isActive())
+            {
+                tx.rollback();
+            }
+            pm.close();
+        }
+	}
+ 
+	
+	public long eliminarLectorCC(long idLector, long idCentroComercial) 
+	{
+		PersistenceManager pm = pmf.getPersistenceManager();
+	        Transaction tx=pm.currentTransaction();
+	        try
+	        {
+	            tx.begin();
+	            long resp = sqllectorcc.eliminarLectorCc (pm,  idLector,  idCentroComercial);	            
+	            tx.commit();
+
+	            return resp;
+	        }
+	        catch (Exception e)
+	        {
+//	        	e.printStackTrace();
+	        	log.error ("Exception : " + e.getMessage() + "\n" + darDetalleException(e));
+	        	return -1;
+	        }
+	        finally
+	        {
+	            if (tx.isActive())
+	            {
+	                tx.rollback();
+	            }
+	            pm.close();
+	        }
+	}
+ 
+	
+	public List<LectorCC> darLectorCC ()
+	{
+		return sqllectorcc.darLectorCC (pmf.getPersistenceManager());
+	}
+	
+	/* ****************************************************************
+	 * 			Métodos para manejar la relación Lector Local
+	 *****************************************************************/
+	
+	
+	public LectorLocal adicionarLectorLocal (long idLector, long idLocal) 
+	{
+		PersistenceManager pm = pmf.getPersistenceManager();
+        Transaction tx=pm.currentTransaction();
+        try
+        {
+            tx.begin();
+            long id = nextval ();
+            long tuplasInsertadas = sqllectorlocal.adicionarLectorLocal (pmf.getPersistenceManager(), idLector, idLocal);
+    		tx.commit();
+
+            log.trace ("Inserción de LectorLocal: [" + id + ", " + idLocal + "]. " + tuplasInsertadas + " tuplas insertadas");
+
+            return new LectorLocal (idLector, idLocal);
+        }
+        catch (Exception e)
+        {
+//        	e.printStackTrace();
+        	log.error ("Exception : " + e.getMessage() + "\n" + darDetalleException(e));
+        	return null;
+        }
+        finally
+        {
+            if (tx.isActive())
+            {
+                tx.rollback();
+            }
+            pm.close();
+        }
+	}
+ 
+	
+	public long eliminarLectorLocal(long idLector, long idLocal) 
+	{
+		PersistenceManager pm = pmf.getPersistenceManager();
+	        Transaction tx=pm.currentTransaction();
+	        try
+	        {
+	            tx.begin();
+	            long resp = sqllectorlocal.eliminarLectorLocal (pm,  idLector,  idLocal);	            
+	            tx.commit();
+
+	            return resp;
+	        }
+	        catch (Exception e)
+	        {
+//	        	e.printStackTrace();
+	        	log.error ("Exception : " + e.getMessage() + "\n" + darDetalleException(e));
+	        	return -1;
+	        }
+	        finally
+	        {
+	            if (tx.isActive())
+	            {
+	                tx.rollback();
+	            }
+	            pm.close();
+	        }
+	}
+ 
+	
+	public List<LectorLocal> darLectorLocal ()
+	{
+		return sqllectorlocal.darLectorLocal (pmf.getPersistenceManager());
+	}
+	
+	/* ****************************************************************
+	 * 			Métodos para manejar la relación Horario
+	 *****************************************************************/
+	
+	
+	public Horario adicionarHorario (long idHorario, long horaEntrada, long horaSalida) 
+	{
+		PersistenceManager pm = pmf.getPersistenceManager();
+        Transaction tx=pm.currentTransaction();
+        try
+        {
+            tx.begin();
+            long id = nextval ();
+            long tuplasInsertadas = sqlhorario.adicionarHorario (pmf.getPersistenceManager(), idHorario, horaEntrada, horaSalida);
+    		tx.commit();
+
+            log.trace ("Inserción de Horario: [" + id + ", " + idHorario + "]. " + tuplasInsertadas + " tuplas insertadas");
+
+            return new Horario ();
+        }
+        catch (Exception e)
+        {
+//        	e.printStackTrace();
+        	log.error ("Exception : " + e.getMessage() + "\n" + darDetalleException(e));
+        	return null;
+        }
+        finally
+        {
+            if (tx.isActive())
+            {
+                tx.rollback();
+            }
+            pm.close();
+        }
+	}
+ 
+	
+	public long eliminarHorario(long idHorario, long horaEntrada, long horaSalida) 
+	{
+		PersistenceManager pm = pmf.getPersistenceManager();
+	        Transaction tx=pm.currentTransaction();
+	        try
+	        {
+	            tx.begin();
+	            long resp = sqlhorario.eliminarHorario (pm,  idHorario, horaEntrada, horaSalida);	            
+	            tx.commit();
+
+	            return resp;
+	        }
+	        catch (Exception e)
+	        {
+//	        	e.printStackTrace();
+	        	log.error ("Exception : " + e.getMessage() + "\n" + darDetalleException(e));
+	        	return -1;
+	        }
+	        finally
+	        {
+	            if (tx.isActive())
+	            {
+	                tx.rollback();
+	            }
+	            pm.close();
+	        }
+	}
+ 
+	
+	public List<Horario> darHorario ()
+	{
+		return sqlhorario.darHorario (pmf.getPersistenceManager());
+	}
+	
+	/** 
 	 * Elimina todas las tuplas de todas las tablas de la base de datos de Parranderos
 	 * Crea y ejecuta las sentencias SQL para cada tabla de la base de datos - EL ORDEN ES IMPORTANTE 
 	 * @return Un arreglo con 7 números que indican el número de tuplas borradas en las tablas CentroComercial, Carnet, Calendario, Visitante,
@@ -876,6 +1365,12 @@ public class PersistenciaParranderos
         }
 		
 	}
+	
+	
+	
+	
+	
+	
 	
 
  }
